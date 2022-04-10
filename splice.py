@@ -60,5 +60,5 @@ else:
     first2EventFile = PATH_PREFIX+str(rank)+TWO_EVENTS_TRACE_SUFFIX
     last4EventFile  = PATH_PREFIX+str(rank)+FOUR_EVENTS_TRACE_SUFFIX
     outputFileName  = str(rank)+TRACE_SUFFIX
-
+    print('reading from {} and {}, output to {}'.format(first2EventFile, last4EventFile, outputFileName))
     splice_trace(first2EventFile, last4EventFile, outputFileName)

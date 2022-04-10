@@ -12,7 +12,7 @@ from global_val import requestDict, call_signature_table, rules_list
 
 def getArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tracepath',  action='store_true', dest='pathPrefix', default='/home/xuqingguo/src/performance/mpi_splice/', help='trace file path prefix')
+    parser.add_argument('--tracepath',  action='store_true', dest='pathPrefix', default='/home/xuqingguo/src/performance/sequitur/', help='trace file path prefix')
     parser.add_argument('--nprocs', '-n', action='store_true', dest='nprocs', default=16, help='process number')
     parser.add_argument('--output', '-o', action='store_true', dest='output', default='code.c', help='output Filename')
     args = parser.parse_args() 
@@ -27,6 +27,7 @@ output_filename = 'code{}.c'.format(rank)
 pathPrefix = args.pathPrefix
 trace_name = pathPrefix+str(rank)+'.trace'
 
+print('getting trace from {}'.format(trace_name))
 global_val.truncateDict, global_val.redirect, global_val.bucket, global_val.requestDict, global_val.performanceDict = computeBlockHash(trace_name)
 
 data = allGather(comm, rank, global_val.performanceDict, global_val.bucket)
@@ -45,10 +46,19 @@ if rank == 0:
 mergeDict = data['mergeDicts'][rank]
 
 global_val.redirect = {key: mergeDict[global_val.redirect[key]] for key in global_val.redirect}
-# print(set(global_val.redirect.values()))
+
+
 
 
 sequitur_test.process_grammar(trace_name)
+
+data = comm.gather(global_val.call_signature_table, 0)
+
+if rank == 1:
+    # print(data)
+    print(global_val.computeDict)
+
+global_val.id_signature_table = dict(zip(global_val.call_signature_table.values(), global_val.call_signature_table.keys()))
 
 # print(global_val.call_signature_table)
 # print(global_val.rules_list)
