@@ -1,0 +1,14 @@
+'''
+    假定所有trace file的名称是${rank}.trace_*
+'''
+TWO_EVENTS_TRACE_SUFFIX = ".trace_2"
+FOUR_EVENTS_TRACE_SUFFIX = ".trace_4"
+TRACE_SUFFIX = ".trace"
+
+THRESHOLD = 0.05
+CYC_THRESHOLD = 0.07
+SIMILARITY = 0.3
+CYC_SIMILARITY = 1.5
+ABSOLUTE_DELTA = 400
+PERFORMANCE_DIM = 6
+
