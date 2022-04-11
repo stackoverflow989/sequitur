@@ -3,7 +3,7 @@
 import argparse
 
 from mpi4py import MPI
-from with_compute import allGather, computeBlockHash
+from with_compute import allGather, computeBlockHash, gen_compute_dict
 import sequitur_test
 import code_generation
 import global_val
@@ -31,14 +31,14 @@ print('getting trace from {}'.format(trace_name))
 global_val.truncateDict, global_val.redirect, global_val.bucket, global_val.requestDict, global_val.performanceDict = computeBlockHash(trace_name)
 
 data = allGather(comm, rank, global_val.performanceDict, global_val.bucket)
-if rank == 0:
-    print(data['performanceDict'])
-    print(data['bucket'])
+# if rank == 0:
+#     print(data['performanceDict'])
+#     print(data['bucket'])
 global_val.requestDict = data['requestDict']
 # if rank == 0:
 #     print(global_val.requestDict)
-if rank == 0:
-    print(data)
+# if rank == 0:
+#     print(data)
 # print(global_val.redirect)
 # if rank == 0:
 #     print(data['bucket'])
@@ -47,18 +47,29 @@ mergeDict = data['mergeDicts'][rank]
 
 global_val.redirect = {key: mergeDict[global_val.redirect[key]] for key in global_val.redirect}
 
+gen_compute_dict(data)
 
+data = comm.gather(global_val.computeDict, 0)
 
+if rank == 0:
+    print(data)
 
 sequitur_test.process_grammar(trace_name)
 
-data = comm.gather(global_val.call_signature_table, 0)
+# data = comm.gather(global_val.call_signature_table, 0)
 
-if rank == 1:
+# if rank == 1:
     # print(data)
-    print(global_val.computeDict)
+    # print(global_val.computeDict)
+
+
 
 global_val.id_signature_table = dict(zip(global_val.call_signature_table.values(), global_val.call_signature_table.keys()))
+
+data = comm.gather(global_val.computeDict, 0)
+
+if rank == 0:
+    print(data)
 
 # print(global_val.call_signature_table)
 # print(global_val.rules_list)

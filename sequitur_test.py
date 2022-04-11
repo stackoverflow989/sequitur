@@ -30,8 +30,6 @@ def create_signature_from_event(mpi_event: str):
         key = index_2
         if key not in global_val.call_signature_table:
             global_val.call_signature_table[key] = global_val.cst_num
-            global_val.computeDict[global_val.cst_num]=global_val.compute_cnt
-            global_val.compute_cnt += 1
             global_val.cst_num += 1
         return global_val.call_signature_table[key]
 

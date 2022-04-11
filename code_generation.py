@@ -3,7 +3,8 @@ import global_val
 
 
 def get_blockId(perf):
-    return global_val.computeDict[global_val.call_signature_table[int(perf)]]
+    # print(global_val.computeDict)
+    return global_val.computeDict[int(perf)]
 
 
 def parse_comm_datatype(datatype):
@@ -59,7 +60,8 @@ def convert_id2str(id: int, times: int, depth: int, prefix: str):
             res += call_mpi_by_str(s, inline_prefix)
         else:
             # 如果是计算代码块
-            res += inline_prefix + 'block{}();\n'.format(global_val.computeDict[id])
+            
+            res += inline_prefix + 'block{}();\n'.format(get_blockId(s))
     else:
         # 是非终结符
         ptr = global_val.rules_list[-id].first()

@@ -221,3 +221,13 @@ def computeBlockHash(filename):
                 bucket[key] = bucketDict[key]
 
     return truncateDict, redirect, bucket, requestDict, performanceDict
+
+
+def gen_compute_dict(data):
+    bucket = data['bucket']
+    global_val.computeDict = {}
+    global_val.compute_cnt = 0
+    for key in bucket:
+        global_val.computeDict[key] = global_val.compute_cnt
+        global_val.compute_cnt += 1
+    return
