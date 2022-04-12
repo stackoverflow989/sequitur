@@ -14,7 +14,7 @@ def create_signature_from_event(mpi_event: str):
         for i in range(3):
             key += events[i]
             key += ';'
-        key +=  events[5]
+        # key +=  events[5]
         if key not in global_val.call_signature_table:
             global_val.call_signature_table[key] = global_val.cst_num
             global_val.cst_num += 1
@@ -267,7 +267,7 @@ def print_rules():
                     temp += str(ptr.id) + '^' + str(ptr.exp) + ' '
                 ptr = ptr.next
             j += 1
-            # print(temp)
+            print(temp)
             out.write(temp + '\n')
 
 
@@ -275,12 +275,12 @@ def sequitur(filename):
     with open(filename, 'r') as file_in:
         count = 0
         for line in file_in:
-            # if ' MPI_Compute' not in line:
-                # number = int(line)
-                # if count == 3355:
-                #     print('here')
-            number = create_signature_from_event(line)
-            append_terminal(number)
+            if ' MPI_Compute' not in line:
+                    # number = int(line)
+                    # if count == 3355:
+                    #     print('here')
+                number = create_signature_from_event(line)
+                append_terminal(number)
         print_rules()
     # print('end')
 

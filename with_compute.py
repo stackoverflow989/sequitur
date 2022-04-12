@@ -178,11 +178,14 @@ def computeBlockHash(filename):
     redirect = {}  # 因为需要删除一些代号，所以需要重定向一下旧的代号 TODO 处理有问题，不影响合并代码块
     for key in bucket.keys():
         five = (key[0], key[1], key[2], key[4], key[5])
+        # if str(key[0]).find('530') >= 0:
+        #     print(key[3]) 
         if five in fiveSimilar:
             # 合并两个记录
             # 以第一个出现的记录为准，重定向bucketDict中的记录
             bucketDict[bucket[key][1]] = bucketDict[fiveSimilar[five]]
             # 删除后者在bucket中的记录，加权求CYC的均值
+            
             bucketDict[fiveSimilar[five]][3] = int(
                 (bucketDict[fiveSimilar[five]][3] * performanceDict[fiveSimilar[five]] + key[3] * bucket[key][0]) / (
                         performanceDict[fiveSimilar[five]] + bucket[key][0]))

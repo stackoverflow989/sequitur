@@ -92,6 +92,7 @@ def code_generation(output_filename, request_num, rank, comm):
         out.write('#include <string.h>\n')
         out.write('#include "mpi.h"\n')
         out.write('#include "block.h"\n')
+        out.write('#include "time.h"\n')
         out.write('#define REQUEST_NUM {}\n'.format(request_num))
 
         out.write('int main(int argc, char** argv) {\n')
@@ -112,9 +113,17 @@ def code_generation(output_filename, request_num, rank, comm):
     if rank == 0:
         for i in range(comm.size):
             out.write('\tif (rank == {}) {{\n'.format(i))
+            out.write('\tclock_t start, end;\n')
+            out.write('\tstart = clock();\n')
             out.write(data[i])
+            out.write('\tend = clock();\n')
+            out.write('\tdouble duration = (double)(end - start) / CLOCKS_PER_SEC;\n')
+            out.write('\tprintf("rank %d end, using time %f seconds\\n", rank, duration);\n')
             out.write('\t}')
 
+        out.write('\tMPI_Finalize();\n')
+
         out.write('}')
+
         out.close()
 
