@@ -13,7 +13,7 @@ def getArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('--allevents', '-a', action='store_true', dest='allEvents', default=False, help='do all events in a file. True or False')
     parser.add_argument('--tracepath', '-t', dest='pathPrefix', default='/home/xuqingguo/common/NPB3.3.1/NPB3.3-MPI/bin/', help='trace file path prefix')
-    #parser.add_argument('--tracepath', '-t', action='store_true', dest='pathPrefix', default='/home/xuqingguo/src/performance/sequitur/CG_B_8/', help='trace file path prefix')
+    parser.add_argument('--outputpath', '-o', dest='outPathPrefix', default='/home/xuqingguo/src/performance/sequitur/', help='output trace file path prefix')
     parser.add_argument('--verify', '-v', action='store_true', help='verify merged trace')
     args = parser.parse_args() 
     return args
@@ -50,7 +50,7 @@ args = getArgs()
 
 allEvents = args.allEvents
 PATH_PREFIX = args.pathPrefix
-
+outprefix = args.outPathPrefix
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 if allEvents:
@@ -60,5 +60,5 @@ else:
     first2EventFile = PATH_PREFIX+str(rank)+TWO_EVENTS_TRACE_SUFFIX
     last4EventFile  = PATH_PREFIX+str(rank)+FOUR_EVENTS_TRACE_SUFFIX
     outputFileName  = str(rank)+TRACE_SUFFIX
-    print('reading from {} and {}, output to {}'.format(first2EventFile, last4EventFile, outputFileName))
-    splice_trace(first2EventFile, last4EventFile, outputFileName)
+    print('reading from {} and {}, output to {}'.format(first2EventFile, last4EventFile, outprefix+outputFileName))
+    splice_trace(first2EventFile, last4EventFile, outprefix+outputFileName)

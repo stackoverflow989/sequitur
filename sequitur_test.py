@@ -18,7 +18,7 @@ def create_signature_from_event(mpi_event: str):
         if key not in global_val.call_signature_table:
             global_val.call_signature_table[key] = global_val.cst_num
             global_val.cst_num += 1
-        return global_val.call_signature_table[key]
+        return global_val.call_signature_table[key], key
     else:
         line = mpi_event.strip()
         s = line.split(',')[2]
@@ -31,7 +31,7 @@ def create_signature_from_event(mpi_event: str):
         if key not in global_val.call_signature_table:
             global_val.call_signature_table[key] = global_val.cst_num
             global_val.cst_num += 1
-        return global_val.call_signature_table[key]
+        return global_val.call_signature_table[key], key
 
 
 # 表示一个规则，guard作为哨兵
@@ -140,7 +140,7 @@ class Symbol:
             rule.first().put_digram()
            
         # 如果新创建的规则的第一个symbol是非终结符，那么该非终结符对应的规则可能被替代
-        if rule.first().is_non_terminal() and rule.first().rule.count == 1:
+        if rule.first().is_non_terminal() and rule.first().exp == 1 and rule.first().rule.count == 1:
             rule.first().expand()
 
     def clean_up(self):
@@ -267,7 +267,36 @@ def print_rules():
                     temp += str(ptr.id) + '^' + str(ptr.exp) + ' '
                 ptr = ptr.next
             j += 1
-            print(temp)
+            # print(temp)
+            out.write(temp + '\n')
+
+
+def _print_rules(rank):
+    with open('result.txt', 'w') as out:
+        global_val.rules_list = [global_val.main_rule]
+        length = 1
+        j = 0
+        while j < length:
+            temp = str(-j) + '->'
+            ptr = global_val.rules_list[j].first()
+            while True:
+                if ptr.is_guard():
+                    break
+                if ptr.is_non_terminal():
+                    if length > ptr.rule.index and global_val.rules_list[ptr.rule.index] == ptr.rule:
+                        i = ptr.rule.index
+                    else:
+                        i = length
+                        ptr.rule.index = length
+                        global_val.rules_list.append(ptr.rule)
+                        length += 1
+                    temp += str(-ptr.rule.index) + '^' + str(ptr.exp) + ' '
+                else:
+                    temp += str(ptr.id) + '^' + str(ptr.exp) + ' '
+                ptr = ptr.next
+            j += 1
+            if rank == 0:
+                print(temp)
             out.write(temp + '\n')
 
 
@@ -275,14 +304,15 @@ def sequitur(filename):
     with open(filename, 'r') as file_in:
         count = 0
         for line in file_in:
-            if ' MPI_Compute' not in line:
+            # if ' MPI_Compute' not in line:
                     # number = int(line)
-                    # if count == 3355:
-                    #     print('here')
-                number = create_signature_from_event(line)
-                append_terminal(number)
+                # if count == 570:
+                #     print('here')
+            number, temp = create_signature_from_event(line)
+                # print('{} {}'.format(number, temp))
+            append_terminal(number)
         print_rules()
-    # print('end')
+    # print('end')  
 
 
 # def getArgs():
