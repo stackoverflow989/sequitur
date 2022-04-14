@@ -34,6 +34,13 @@ def call_mpi_by_str(s: str, prefix: str):
         return prefix+'MPI_Reduce(sendbuf, recvbuf, {}, {}, MPI_SUM, {}, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
     elif mpi_name == 'MPI_Barrier':
         return prefix+'MPI_Barrier(comm);\n'
+    elif mpi_name == 'MPI_Allreduce':
+        return prefix+'MPI_Allreduce(sendbuf, recvbuf, {}, {}, MPI_SUM, comm);\n'.format(datacount, parse_comm_datatype(datatype))
+    elif mpi_name == 'MPI_Recv':
+        return prefix+'MPI_Recv(recvbuf, {}, {}, {}, 0, comm, &status);\n'.format(datacount, parse_comm_datatype(datatype), target)
+    elif mpi_name == 'MPI_Isend':
+        return prefix+'MPI_Isend(sendbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, 0)
+
     else:
         return ''
 

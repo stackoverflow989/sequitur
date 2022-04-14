@@ -40,7 +40,9 @@ global_val.requestDict = data['requestDict']
 # if rank == 0:
 #     print(data)
 # print(global_val.redirect)
+
 if rank == 0:
+    
     print(data['bucket'])
     print(data['performanceDict'])
 
@@ -52,15 +54,15 @@ gen_compute_dict(data)
 
 data = comm.gather(global_val.computeDict, 0)
 
-if rank == 0:
-    print(data)
+# if rank == 0:
+#     print(data)
 
 sequitur_test.process_grammar(trace_name)
-
+print(global_val.call_signature_table)
 sequitur_test._print_rules(rank)
 
-if rank == 0:
-    print(global_val.call_signature_table)
+# if rank == 0:
+#     print(global_val.call_signature_table)
 # data = comm.gather(global_val.call_signature_table, 0)
 
 # if rank == 1:
@@ -73,8 +75,8 @@ global_val.id_signature_table = dict(zip(global_val.call_signature_table.values(
 
 data = comm.gather(global_val.computeDict, 0)
 
-if rank == 0:
-    print(data)
+# if rank == 0:
+#     print(data)
 
 # print(global_val.call_signature_table)
 # print(global_val.rules_list)
