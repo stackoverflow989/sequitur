@@ -1,3 +1,4 @@
+import glob
 import time
 import global_val 
 
@@ -22,14 +23,15 @@ def call_mpi_by_str(s: str, prefix: str):
     datacount = int(s[2])
     datatype = int(s[3])
     target = int(s[4])
+    request = s[5]
     if mpi_name == 'MPI_Bcast':
         return prefix+'MPI_Bcast(buffer, {}, {}, {}, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
     elif mpi_name == 'MPI_Send':
         return prefix+'MPI_Send(sendbuf, {}, {}, {}, 0, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
     elif mpi_name == 'MPI_Irecv':
-        return prefix+'MPI_Irecv(recvbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, 0)
+        return prefix+'MPI_Irecv(recvbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, global_val.requestDict[request])
     elif mpi_name == 'MPI_Wait':
-        return prefix+'MPI_Wait(&requests[{}], &status);\n'.format(0)
+        return prefix+'MPI_Wait(&requests[{}], &status);\n'.format(global_val.requestDict[request])
     elif mpi_name == 'MPI_Reduce':
         return prefix+'MPI_Reduce(sendbuf, recvbuf, {}, {}, MPI_SUM, {}, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
     elif mpi_name == 'MPI_Barrier':
@@ -39,8 +41,9 @@ def call_mpi_by_str(s: str, prefix: str):
     elif mpi_name == 'MPI_Recv':
         return prefix+'MPI_Recv(recvbuf, {}, {}, {}, 0, comm, &status);\n'.format(datacount, parse_comm_datatype(datatype), target)
     elif mpi_name == 'MPI_Isend':
-        return prefix+'MPI_Isend(sendbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, 0)
-
+        return prefix+'MPI_Isend(sendbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, global_val.requestDict[request])
+    elif mpi_name == 'MPI_Waitall':
+        return prefix+'MPI_Waitall();\n'
     else:
         return ''
 
@@ -103,7 +106,7 @@ def code_generation(output_filename, request_num, rank, comm):
         out.write('#define REQUEST_NUM {}\n'.format(request_num))
 
         out.write('int main(int argc, char** argv) {\n')
-        out.write('\tint rank, size;\n\tint i = 0;\n\tMPI_Request requests[REQUEST_NUM];\n')
+        out.write('\tint rank, size;\n\tint i = 0;\n')
         out.write('\tMPI_Init(&argc, &argv);\n')
         out.write('\tMPI_Comm_size(MPI_COMM_WORLD, &size);\n')
         out.write('\tMPI_Comm_rank(MPI_COMM_WORLD, &rank);\n')
@@ -120,12 +123,13 @@ def code_generation(output_filename, request_num, rank, comm):
     if rank == 0:
         for i in range(comm.size):
             out.write('\tif (rank == {}) {{\n'.format(i))
-            out.write('\tclock_t start, end;\n')
-            out.write('\tstart = clock();\n')
+            out.write('\t\tdouble start, end;\n')
+            out.write('\t\tstart = MPI_Wtime();\n')
+            out.write('\t\tMPI_Request requests[REQUEST_NUM];\n')
             out.write(data[i])
-            out.write('\tend = clock();\n')
-            out.write('\tdouble duration = (double)(end - start) / CLOCKS_PER_SEC;\n')
-            out.write('\tprintf("rank %d end, using time %f seconds\\n", rank, duration);\n')
+            out.write('\t\tend = MPI_Wtime();\n')
+            out.write('\t\tdouble duration = (double)(end - start);\n')
+            out.write('\t\tprintf("rank %d end, using time %f seconds\\n", rank, duration);\n')
             out.write('\t}')
 
         out.write('\tMPI_Finalize();\n')

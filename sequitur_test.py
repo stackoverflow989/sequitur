@@ -14,7 +14,7 @@ def create_signature_from_event(mpi_event: str):
         for i in range(3):
             key += events[i]
             key += ';'
-        # key +=  events[5]
+        key +=  events[5]
         if key not in global_val.call_signature_table:
             global_val.call_signature_table[key] = global_val.cst_num
             global_val.cst_num += 1

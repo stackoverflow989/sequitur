@@ -7,6 +7,8 @@ cst_num = 1
 rules_list = []
 main_rule = None
 
+comm_map = {}   # {comm_id: {color: {rank: val}, key: {rank: val}}} 只有在comm_split才会记录
+
 truncateDict = {}
 redirect = {}
 bucket = {}

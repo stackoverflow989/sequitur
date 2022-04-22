@@ -166,9 +166,13 @@ def computeBlockHash(filename):
             lineCount += 1
         else:
             s = line.split('\n')[0].split(',')
-            request = s[len(s)-1]
+            request = s[5]
             if request not in requestDict:
                 requestDict[request] = len(requestDict)
+            if s[1] == 'MPI_Comm_split':
+                comm = s[6]
+                if comm not in global_val.comm_map:
+                    global_val.comm_map[comm] = {'color': int(s[7]), 'key': int(s[8])}
         line = f.readline()
 
     # 准备返回的数据
