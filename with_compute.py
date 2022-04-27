@@ -170,9 +170,22 @@ def computeBlockHash(filename):
             if request not in requestDict:
                 requestDict[request] = len(requestDict)
             if s[1] == 'MPI_Comm_split':
-                comm = s[6]
+                comm = s[7]
+                pre_comm = s[6]
                 if comm not in global_val.comm_map:
-                    global_val.comm_map[comm] = {'color': int(s[7]), 'key': int(s[8])}
+                    global_val.comm_map[comm] = {'id': global_val.comm_cnt, 'color': int(s[8]), 'key': int(s[9]), 'parent': pre_comm}
+                    global_val.comm_cnt += 1
+            elif s[1] == 'MPI_Comm_dup':
+                pre_comm = s[6]
+                comm = s[7]
+                if comm not in global_val.comm_map:
+                    global_val.comm_map[comm] = {'id': global_val.comm_cnt, 'parent': pre_comm}
+                    global_val.comm_cnt += 1
+            elif s[1] == 'MPI_Comm_create':
+                pass
+            # elif s[1] == 'MPI_Comm_free':     # MPI_Comm_free理论上来参数里的MPI_Comm一定会在前面出现，在这里只需要记录前面已经出现过的MPI_Comm就可以了
+            #     comm = s[6]
+
         line = f.readline()
 
     # 准备返回的数据

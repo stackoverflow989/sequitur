@@ -1,6 +1,7 @@
 
 
 from locale import T_FMT_AMPM
+from sequitur.constant import TWO_COMM_LIST
 from with_compute import *
 from mpi4py import MPI
 import global_val
@@ -14,10 +15,22 @@ def create_signature_from_event(mpi_event: str):
         for i in range(3):
             key += events[i]
             key += ';'
-        key +=  events[5]
+        key += events[5]    # request
+        key += ';'
+        key += events[6]    # comm
+        
+        if events[1] in TWO_COMM_LIST:
+            key += ';'
+            key += events[7]
+        if events[1] == 'MPI_Comm_split':
+            key += ';'
+            key += events[8]    # color
+            key += ';'
+            key += events[9]    # key
         if key not in global_val.call_signature_table:
             global_val.call_signature_table[key] = global_val.cst_num
             global_val.cst_num += 1
+        # 处理comm
         return global_val.call_signature_table[key], key
     else:
         line = mpi_event.strip()
@@ -306,39 +319,14 @@ def sequitur(filename):
         for line in file_in:
             # if ' MPI_Compute' not in line:
                     # number = int(line)
-                # if count == 570:
-                #     print('here')
             number, temp = create_signature_from_event(line)
                 # print('{} {}'.format(number, temp))
             append_terminal(number)
         print_rules()
-    # print('end')  
-
-
-# def getArgs():
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--tracepath',  action='store_true', dest='pathPrefix', default='/home/xuqingguo/src/performance/mpi_splice/', help='trace file path prefix')
-#     parser.add_argument('--nprocs', '-n', action='store_true', dest='nprocs', default=16, help='process number')
-#     parser.add_argument('--output', '-o', action='store_true', dest='output', default='code.c', help='output Filename')
-#     args = parser.parse_args() 
-#     return args
-
-
-# rules_hash = {}
-# comm = MPI.COMM_WORLD
-# rank = comm.Get_rank()
-# args = getArgs()
-# nprocs = args.nprocs
-# output_filename = args.output
-# pathPrefix = args.pathPrefix
-# trace_name = pathPrefix+str(rank)+'.trace'
-
 
 
 def process_grammar(trace_name):
-    # print(global_val.requestDict)
     global_val.main_rule = Rule(-global_val.number_of_rules)
     global_val.number_of_rules += 1
     
     sequitur(trace_name)
-    # rule_all_gather(comm, nprocs)

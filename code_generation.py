@@ -1,5 +1,7 @@
 import glob
 import time
+
+from pyparsing import col
 import global_val 
 
 
@@ -16,6 +18,10 @@ def parse_comm_datatype(datatype):
     return 'MPI_INT'
 
 
+def parse_comm(comm_str):
+    return int(global_val.comm_map[comm_str]['id'])
+
+
 def call_mpi_by_str(s: str, prefix: str):
     s = s.split('\n')[0].split(';')
     rank = int(s[0])
@@ -25,25 +31,46 @@ def call_mpi_by_str(s: str, prefix: str):
     target = int(s[4])
     request = s[5]
     if mpi_name == 'MPI_Bcast':
-        return prefix+'MPI_Bcast(buffer, {}, {}, {}, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Bcast(buffer, {}, {}, {}, comm[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, comm)
     elif mpi_name == 'MPI_Send':
-        return prefix+'MPI_Send(sendbuf, {}, {}, {}, 0, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Send(sendbuf, {}, {}, {}, 0, comm[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, comm)
     elif mpi_name == 'MPI_Irecv':
-        return prefix+'MPI_Irecv(recvbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, global_val.requestDict[request])
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Irecv(recvbuf, {}, {}, {}, 0, comm[{}], &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, comm, global_val.requestDict[request])
     elif mpi_name == 'MPI_Wait':
         return prefix+'MPI_Wait(&requests[{}], &status);\n'.format(global_val.requestDict[request])
     elif mpi_name == 'MPI_Reduce':
-        return prefix+'MPI_Reduce(sendbuf, recvbuf, {}, {}, MPI_SUM, {}, comm);\n'.format(datacount, parse_comm_datatype(datatype), target)
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Reduce(sendbuf, recvbuf, {}, {}, MPI_SUM, {}, comm[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, comm)
     elif mpi_name == 'MPI_Barrier':
-        return prefix+'MPI_Barrier(comm);\n'
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Barrier(comm[{}]);\n'.format(comm)
     elif mpi_name == 'MPI_Allreduce':
-        return prefix+'MPI_Allreduce(sendbuf, recvbuf, {}, {}, MPI_SUM, comm);\n'.format(datacount, parse_comm_datatype(datatype))
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Allreduce(sendbuf, recvbuf, {}, {}, MPI_SUM, comm[{}]);\n'.format(datacount, parse_comm_datatype(datatype), comm)
     elif mpi_name == 'MPI_Recv':
-        return prefix+'MPI_Recv(recvbuf, {}, {}, {}, 0, comm, &status);\n'.format(datacount, parse_comm_datatype(datatype), target)
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Recv(recvbuf, {}, {}, {}, 0, comm[{}], &status);\n'.format(datacount, parse_comm_datatype(datatype), target, comm)
     elif mpi_name == 'MPI_Isend':
-        return prefix+'MPI_Isend(sendbuf, {}, {}, {}, 0, comm, &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, global_val.requestDict[request])
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Isend(sendbuf, {}, {}, {}, 0, comm[{}], &requests[{}]);\n'.format(datacount, parse_comm_datatype(datatype), target, comm, global_val.requestDict[request])
     elif mpi_name == 'MPI_Waitall':
         return prefix+'MPI_Waitall();\n'
+    elif mpi_name == 'MPI_Comm_split':
+        pre_comm = parse_comm(s[6])
+        comm = parse_comm(s[7])
+        color = int(s[8])
+        key = int(s[9])
+        return prefix+'MPI_Comm_split(comm[{}], {}, {}, &comm[{}]);\n'.format(pre_comm, color, key, comm)
+    elif mpi_name == 'MPI_Comm_dup':
+        pre_comm = parse_comm(s[6])
+        comm = parse_comm(s[7])
+        return prefix+'MPI_Comm_dup(comm[{}], &comm[{}]);\n'.format(pre_comm, comm)
+    elif mpi_name == 'MPI_Comm_free':
+        comm = parse_comm(s[6])
+        return prefix+'MPI_Comm_free(&comm[{}]);\n'.format(comm)
     else:
         return ''
 
@@ -104,13 +131,14 @@ def code_generation(output_filename, request_num, rank, comm):
         out.write('#include "block.h"\n')
         out.write('#include "time.h"\n')
         out.write('#define REQUEST_NUM {}\n'.format(request_num))
-
+        out.write('#define COMM_NUM {}\n'.format(global_val.comm_cnt))
         out.write('int main(int argc, char** argv) {\n')
         out.write('\tint rank, size;\n\tint i = 0;\n')
         out.write('\tMPI_Init(&argc, &argv);\n')
         out.write('\tMPI_Comm_size(MPI_COMM_WORLD, &size);\n')
         out.write('\tMPI_Comm_rank(MPI_COMM_WORLD, &rank);\n')
-        out.write('\tMPI_Comm comm = MPI_COMM_WORLD;\n')
+        out.write('\tMPI_Comm comm[COMM_NUM];\n')
+        out.write('\tcomm[0] = MPI_COMM_WORLD;\n')
         out.write('\tMPI_Status status;\n')
         out.write('\tvoid* buffer=malloc(10000000);\n')
         out.write('\tvoid* sendbuf=malloc(10000000);\n')
