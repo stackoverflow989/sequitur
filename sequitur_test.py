@@ -5,10 +5,11 @@ import MPI_define
 from with_compute import *
 from mpi4py import MPI
 import global_val
+import MPI_define
 
 
 def create_signature_from_event(mpi_event: str):
-    
+    mpi_event = mpi_event.strip()
     events = mpi_event.split(',')
     key = ''
     # 对于MPI通信事件，丢弃最后两位时间数据，把其他的部分作为key值
@@ -47,6 +48,7 @@ def create_signature_from_event(mpi_event: str):
                     key += ':'
         else:
             # 最多只需要一个request并且是使用request
+            # print(events[5])
             request = events[5].split(':')[0]
             if int(request) == -1:
                 key += '-1:'
@@ -58,13 +60,12 @@ def create_signature_from_event(mpi_event: str):
 
         key += ';'
         if len(events) > 6:
-            key += global_val.comm_map[events[6]]['id']
-            # key += events[6]    # comm  存在部分函数调用没有comm这个结构体
+            key += str(global_val.comm_map[events[6]]['id'])    # comm  存在部分函数调用没有comm这个结构体
         
         if events[1] in TWO_COMM_LIST:
             key += ';'
-            key += global_val.comm_map[events[7]]['id']
             # key += events[7]
+            key += str(global_val.comm_map[events[7]]['id'])
         if events[1] == 'MPI_Comm_split':
             key += ';'
             key += events[8]    # color

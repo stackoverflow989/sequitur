@@ -8,13 +8,14 @@ from with_compute import allGather, computeBlockHash, gen_compute_dict
 import sequitur_test
 import code_generation
 import global_val
+import combine_comm
 
 
 def getArgs():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tracepath', '-t', dest='pathPrefix', default='/home/xuqingguo/src/performance/sequitur/smg2000/trace/', help='trace file path prefix')
+    parser.add_argument('--tracepath', '-t', dest='pathPrefix', default='/home/yantao/run/sequitur/flash_traces_new/', help='trace file path prefix')
     parser.add_argument('--nprocs', '-n', dest='nprocs', default=16, help='process number')
-    parser.add_argument('--output', '-o', dest='outprefix', default='/home/xuqingguo/src/performance/sequitur/', help='output Filename')
+    parser.add_argument('--output', '-o', dest='outprefix', default='/home/yantao/run/sequitur/', help='output Filename')
     args = parser.parse_args() 
     return args
 
@@ -53,6 +54,8 @@ data = comm.gather(global_val.computeDict, 0)
 
 sequitur_test.process_grammar(trace_name)
 sequitur_test._print_rules(rank=rank)
+
+combine_comm.comm_combine(rank=rank, comm=comm, args=args)
 
 global_val.id_signature_table = dict(zip(global_val.call_signature_table.values(), global_val.call_signature_table.keys()))
 

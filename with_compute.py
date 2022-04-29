@@ -185,12 +185,12 @@ def computeBlockHash(filename):
                     global_val.comm_cnt += 1
             elif s[1] == 'MPI_Comm_create':
                 pass
-            # if len(s) > 6:
-            #     comm = s[6]
-            #     if comm not in global_val.comm_map:
-            #         global_val[comm] = {'id': 0, 'parent': None, }
-            # elif s[1] == 'MPI_Comm_free':     # MPI_Comm_free理论上来参数里的MPI_Comm一定会在前面出现，在这里只需要记录前面已经出现过的MPI_Comm就可以了
-            #     comm = s[6]
+            if len(s) > 6:
+                comm = s[6]
+                if comm not in global_val.comm_map:
+                    global_val.comm_map[comm] = {'id': 0, 'parent': None}
+            elif s[1] == 'MPI_Comm_free':     # MPI_Comm_free理论上来参数里的MPI_Comm一定会在前面出现，在这里只需要记录前面已经出现过的MPI_Comm就可以了
+                comm = s[6]
 
         line = f.readline()
 
