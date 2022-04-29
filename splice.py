@@ -4,7 +4,6 @@ import argparse
 from pickle import FALSE
 import sys
 from mpi4py import MPI
-import numpy as np
 import copy
 from constant import ABSOLUTE_DELTA, CYC_SIMILARITY, PERFORMANCE_DIM, SIMILARITY, TWO_EVENTS_TRACE_SUFFIX, FOUR_EVENTS_TRACE_SUFFIX, TRACE_SUFFIX, THRESHOLD
 
@@ -12,8 +11,8 @@ from constant import ABSOLUTE_DELTA, CYC_SIMILARITY, PERFORMANCE_DIM, SIMILARITY
 def getArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('--allevents', '-a', action='store_true', dest='allEvents', default=False, help='do all events in a file. True or False')
-    parser.add_argument('--tracepath', '-t', dest='pathPrefix', default='/home/xuqingguo/common/NPB3.3.1/NPB3.3-MPI/bin/', help='trace file path prefix')
-    parser.add_argument('--outputpath', '-o', dest='outPathPrefix', default='/home/xuqingguo/src/performance/sequitur/', help='output trace file path prefix')
+    parser.add_argument('--tracepath', '-t', dest='pathPrefix', default='/home/xuqingguo/packages/kripke-v1.2.4-d85c6bc/build/bin/', help='trace file path prefix')
+    parser.add_argument('--outputpath', '-o', dest='outPathPrefix', default='/home/xuqingguo/src/performance/sequitur/kripke/trace/', help='output trace file path prefix')
     parser.add_argument('--verify', '-v', action='store_true', help='verify merged trace')
     args = parser.parse_args() 
     return args
@@ -31,12 +30,16 @@ def splice_trace(first2EventFile, last4EventFile, outputFileName):
     while line1:
         s = line2.split(',')
         # print(s)
-        if s[1] == ' MPI_Compute':
-            values = s[2].split(';')[:4]
-            line = line1.split('\n')[0]+';'.join(values)+';\n'
-            f3.write(line)
-        else:
-            f3.write(line1)
+        try:
+            if s[1] == ' MPI_Compute':
+                values = s[2].split(';')[:4]
+                line = line1.split('\n')[0]+';'.join(values)+';\n'
+                f3.write(line)
+            else:
+                f3.write(line1)
+        except Exception as e:
+            print(s)
+            exit(-1)
             
         line1 = f1.readline()
         line2 = f2.readline()

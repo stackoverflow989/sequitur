@@ -1,7 +1,6 @@
 
-
-from locale import T_FMT_AMPM
-from sequitur.constant import TWO_COMM_LIST
+from matplotlib.style import available
+from constant import TWO_COMM_LIST
 from with_compute import *
 from mpi4py import MPI
 import global_val
@@ -12,16 +11,49 @@ def create_signature_from_event(mpi_event: str):
     key = ''
     # 对于MPI通信事件，丢弃最后两位时间数据，把其他的部分作为key值
     if ' MPI_Compute' not in mpi_event:
-        for i in range(3):
+        for i in range(2):
             key += events[i]
             key += ';'
-        key += events[5]    # request
+        
+        # buf_data = events[2].split(';')
+        # buf_data[0] =  str(int(int((int(buf_data[0])/1000))*1000+1))
+
+        key += events[2]
         key += ';'
-        key += events[6]    # comm
+
+        # key += events[5]
+        if events[1] == 'MPI_Waitall' or events[1] == 'MPI_Wait':
+            requests = events[5].split(':')
+            requests = requests[:len(requests)-1]
+            length = len(requests)
+            for i in range(length):
+                if requests[i] not in global_val.requestUsedMap:
+                    pass
+                else:
+                    id = global_val.requestUsedMap.pop(requests[i])
+                    global_val.requestUsed[int(id)] = False
+                    key += id
+                    key += ':'
+        else:
+            # 最多只需要一个request并且是使用request
+            request = events[5].split(':')[0]
+            if int(request) == -1:
+                key += '-1:'
+            else:
+                available_request_id = str(find_avaliable_request())
+                key += available_request_id
+                global_val.requestUsedMap[request] = available_request_id
+                key += ':'
+
+        key += ';'
+        if len(events) > 6:
+            key += global_val.comm_map[events[6]]['id']
+            # key += events[6]    # comm  存在部分函数调用没有comm这个结构体
         
         if events[1] in TWO_COMM_LIST:
             key += ';'
-            key += events[7]
+            key += global_val.comm_map[events[7]]['id']
+            # key += events[7]
         if events[1] == 'MPI_Comm_split':
             key += ';'
             key += events[8]    # color
@@ -323,6 +355,18 @@ def sequitur(filename):
                 # print('{} {}'.format(number, temp))
             append_terminal(number)
         print_rules()
+
+
+def find_avaliable_request():
+    for i in range(len(global_val.requestUsed)):
+        if global_val.requestUsed[i] == False:
+            global_val.requestUsed[i] = True
+            return i
+    return -1
+
+
+def free_request(i):
+    global_val.requestUsed[i] = False
 
 
 def process_grammar(trace_name):

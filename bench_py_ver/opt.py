@@ -47,9 +47,9 @@ class Minimize:
             if res.fun < m:
                 m = res.fun
                 r = [int(t) for t in res.x]
-        print("Minimize = "+str(m))
+        #print("Minimize = "+str(m))
         self.min = m
-        print(r)
+        #print(r)
         return r
 
 class Differential_evolution:
@@ -70,10 +70,10 @@ class Differential_evolution:
                         + ((x[0]*param[2][0]+x[1]*param[2][1]+x[2]*param[2][2]+x[3]*param[2][3]-y[2])**2)/(z[2])
         bounds = [(0,y[0]*10),(0,y[0]*10),(0,y[0]*10),(0,y[0]*10)]
         res = differential_evolution(fun, bounds)
-        print("Minimize = "+str(res.fun))
+        #print("Minimize = "+str(res.fun))
         self.min = res.fun
         r = [int(t) for t in res.x]
-        print(r)
+        #print(r)
         return r
 
 
@@ -81,6 +81,22 @@ class Convexopt:
     #need import cvxopt and new numpy (uninstall)
     def __init__(self) -> None:
         pass
+
+class Find_opt:
+    def __init__(self,y,z,param_for_x) -> None:
+        self.data = Data(y,z,param_for_x)
+        self.min = -1
+        self.D_e = Differential_evolution(y,z,param_for_x)
+        self.M = Minimize(y,z,param_for_x)
+
+    def findmin(self):
+        r1 = self.D_e.findmin()
+        r2 = self.M.findmin()
+        print(min(self.D_e.min,self.M.min))
+        if self.D_e.min < self.M.min:
+            return r1
+        return r2
+
 
 if __name__ == "__main__":
     y = [10000,10000,10000]

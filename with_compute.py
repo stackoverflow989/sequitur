@@ -1,5 +1,6 @@
 import copy
 from math import log2
+import re
 from statistics import mean
 from constant import ABSOLUTE_DELTA, CYC_SIMILARITY, PERFORMANCE_DIM, SIMILARITY, TWO_EVENTS_TRACE_SUFFIX, \
     FOUR_EVENTS_TRACE_SUFFIX, TRACE_SUFFIX, THRESHOLD
@@ -166,9 +167,10 @@ def computeBlockHash(filename):
             lineCount += 1
         else:
             s = line.split('\n')[0].split(',')
-            request = s[5]
-            if request not in requestDict:
-                requestDict[request] = len(requestDict)
+            requests = s[5].split(':')
+            for request in requests:
+                if request not in requestDict:
+                    requestDict[request] = len(requestDict)
             if s[1] == 'MPI_Comm_split':
                 comm = s[7]
                 pre_comm = s[6]
@@ -183,6 +185,10 @@ def computeBlockHash(filename):
                     global_val.comm_cnt += 1
             elif s[1] == 'MPI_Comm_create':
                 pass
+            # if len(s) > 6:
+            #     comm = s[6]
+            #     if comm not in global_val.comm_map:
+            #         global_val[comm] = {'id': 0, 'parent': None, }
             # elif s[1] == 'MPI_Comm_free':     # MPI_Comm_free理论上来参数里的MPI_Comm一定会在前面出现，在这里只需要记录前面已经出现过的MPI_Comm就可以了
             #     comm = s[6]
 
