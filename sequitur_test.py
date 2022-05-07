@@ -7,10 +7,36 @@ import global_val
 
 
 def create_signature_from_event(mpi_event: str):
+    
     events = mpi_event.split(',')
     key = ''
     # 对于MPI通信事件，丢弃最后两位时间数据，把其他的部分作为key值
     if ' MPI_Compute' not in mpi_event:
+        function = events[1]
+        key += function
+        key += ';'
+        
+        # buf_data = events[2].split(';')
+        # buf_data[0] =  str(int(int((int(buf_data[0])/1000))*1000+1))
+
+        # key += ';'.join(buf_data)
+
+        if function in MPI_define.collectiveList:
+            key += events[2]
+        else:
+            rank = int(events[0])
+            para = events[2].split(';')
+            target = int(para[2])
+            if target == -1:
+                target = 9999
+            else:
+                target = rank - target
+            para[2] = str(target)
+            key += ";".join(para)
+        
+        key += ';'
+        events = mpi_event.split(',')
+        key = ''
         for i in range(2):
             key += events[i]
             key += ';'
