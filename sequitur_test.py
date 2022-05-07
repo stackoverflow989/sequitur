@@ -1,6 +1,7 @@
 
 from matplotlib.style import available
 from constant import TWO_COMM_LIST
+import MPI_define
 from with_compute import *
 from mpi4py import MPI
 import global_val
@@ -15,11 +16,6 @@ def create_signature_from_event(mpi_event: str):
         function = events[1]
         key += function
         key += ';'
-        
-        # buf_data = events[2].split(';')
-        # buf_data[0] =  str(int(int((int(buf_data[0])/1000))*1000+1))
-
-        # key += ';'.join(buf_data)
 
         if function in MPI_define.collectiveList:
             key += events[2]
@@ -34,17 +30,6 @@ def create_signature_from_event(mpi_event: str):
             para[2] = str(target)
             key += ";".join(para)
         
-        key += ';'
-        events = mpi_event.split(',')
-        key = ''
-        for i in range(2):
-            key += events[i]
-            key += ';'
-        
-        # buf_data = events[2].split(';')
-        # buf_data[0] =  str(int(int((int(buf_data[0])/1000))*1000+1))
-
-        key += events[2]
         key += ';'
 
         # key += events[5]
