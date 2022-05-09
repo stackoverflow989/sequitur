@@ -19,3 +19,12 @@ requestUsedMap = {}
 performanceDict = {}
 computeDict = {}
 compute_cnt = 0
+
+rank = 0
+size = 0
+
+main_rules = None           # main_rules = [rank0's rule 0, rank1's rule 0…]
+unique_dict = None          # unique_dict = {non_terminal_real_content: non_terminal_id}
+non_terminal_dict = None    # non_terminal_dict = {non_terminal_id: non_terminal_real_content}
+rule_dict = None            # 具体的rule结构体
+gathered_cst = None         # 所有终结符的表

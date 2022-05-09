@@ -22,6 +22,7 @@ def getArgs():
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
+global_val.rank = rank
 args = getArgs()
 nprocs = args.nprocs
 output_filename = args.outprefix+'code{}.c'.format(rank)
@@ -59,17 +60,19 @@ combine_comm.comm_combine(rank=rank, comm=comm, args=args)
 
 global_val.id_signature_table = dict(zip(global_val.call_signature_table.values(), global_val.call_signature_table.keys()))
 
+global_val.non_terminal_dict = dict(zip(global_val.unique_dict.values(), global_val.unique_dict.keys()))
+
 data = comm.gather(global_val.call_signature_table, 0)
 
-if rank == 0: 
-    print(global_val.call_signature_table)
+# if rank == 0: 
+#     print(global_val.call_signature_table)
 
 comm.barrier()
 
 data = comm.gather(global_val.computeDict, 0)
 
-if rank == 0:
-    print(global_val.computeDict)
+# if rank == 0:
+#     print(global_val.computeDict)
 
 comm.barrier()
 

@@ -169,7 +169,7 @@ def build_dict(all_cfg):
                 rule_dict[key].id = str(unique_dict[rule_body])
         dict_length_new = len(unique_dict)
         i += 1
-    print(unique_dict)
+    # print(unique_dict)
 
     # for main_rule in main_rules:
     #     print(rule_dict[main_rule].get_rule_body())

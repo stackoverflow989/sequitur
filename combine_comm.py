@@ -1,6 +1,7 @@
 import argparse
 import os
 import editDistance
+from utils import inverseDict
 
 import sequitur_test
 import nonterminal_dict
@@ -134,7 +135,7 @@ def serialize_cfg_for_edit_distance(combined_cst, comm):
 
 
 def combine_cfg(combined_cst, loacl_cfg, rank, comm, args):
-    print("start combining context free grammar")
+    # print("start combining context free grammar")
     gathered_grammar = comm.gather(loacl_cfg, 0)
     with open(args.outprefix + 'cst-cfg-logs/' + str(rank) + "cst&cfg.log", 'a') as fo:
         fo.write("\n")
@@ -220,6 +221,8 @@ def comm_combine(rank, comm, args):
     comm.barrier()
     gathered_cst = combine_cst(rank, comm, args)
 
+    global_val.gathered_cst = inverseDict(gathered_cst)
+
     # 用于计算全局的非终结符字典和新的main rule
     gathered_cfg = serialize_cfg(gathered_cst, rank)
     if rank == 0:
@@ -227,9 +230,14 @@ def comm_combine(rank, comm, args):
     main_rules, unique_dict, rule_dict = combine_cfg(gathered_cst, gathered_cfg, rank, comm, args)
     comm.barrier()
     if rank == 0:
+        # print(rule_dict)
         for main_rule in main_rules:
             print(rule_dict[main_rule].get_rule_body())
-    return main_rules, unique_dict, rule_dict
+        print(unique_dict)
+    global_val.main_rules = main_rules
+    global_val.unique_dict = unique_dict
+    global_val.rule_dict = rule_dict
+    # return main_rules, unique_dict, rule_dict  # unique_dict = {terminal_id: terminal_real_content}
 
 
 def calculate_edit_distance(rank, comm, args):
