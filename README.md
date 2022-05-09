@@ -16,6 +16,13 @@ mpiexec -np ${NPROCS} splice.py -t ${input trace path} -o ${output trace path}
 mpiexec -np ${NPROCS} main.py -t ${input trace path} -o ${output code path}
 ```
 
+## 拟合代码块
+
+```
+cd bench_py_ver
+python code_gen.py
+```
+
 ## 运行benchmark
 
 ```
