@@ -44,7 +44,7 @@ def call_mpi_by_str(s: str, prefix: str):
     mpi_name = s[0]
     datacount = int(s[1])
     datatype = int(s[2])
-    target = global_val.rank+int(s[3])
+    target = int(s[3])
     requests = s[4]
     request = s[4].split(':')[0]
 

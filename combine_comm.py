@@ -229,11 +229,11 @@ def comm_combine(rank, comm, args):
         print(gathered_cst)
     main_rules, unique_dict, rule_dict = combine_cfg(gathered_cst, gathered_cfg, rank, comm, args)
     comm.barrier()
-    if rank == 0:
-        # print(rule_dict)
-        for main_rule in main_rules:
-            print(rule_dict[main_rule].get_rule_body())
-        print(unique_dict)
+    # if rank == 0:
+    #     # print(rule_dict)
+    #     for main_rule in main_rules:
+    #         print(rule_dict[main_rule].get_rule_body())
+    #     print(unique_dict)
     global_val.main_rules = main_rules
     global_val.unique_dict = unique_dict
     global_val.rule_dict = rule_dict
