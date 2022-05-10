@@ -94,7 +94,7 @@ def call_mpi_by_str(s: str, prefix: str):
         return prefix+'MPI_Comm_free(&comms[{}]);\n'.format(comm)
     elif mpi_name == 'MPI_Allgather':
         comm = parse_comm(s[5])
-        return prefix+'MPI_Allgather(sendbuf, {}, {}, recvbuf, {}, {}, comms[{}]);\n'.format(cnt, tp, datacount, parse_comm_datatype(datatype), comm)
+        return prefix+'MPI_Allgather(sendbuf, {}, {}, recvbuf, {}, {}, comms[{}]);\n'.format(cnt, tp, datacount, parse_comm_datatype(datatype, datacount), comm)
     else:
         return ''
 
